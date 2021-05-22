@@ -18,15 +18,15 @@
  ****************************************************************************/
 #ifndef ___SAMSUNG_DECON_H__
 #define ___SAMSUNG_DECON_H__
-#define MAX_DECON_WIN (7)
+#define MAX_DECON_WIN (8)
 #define DECON_WIN_UPDATE_IDX MAX_DECON_WIN
 #define MAX_BUF_PLANE_CNT (3)
 typedef unsigned int u32;
-//#if defined(USES_ARCH_ARM64) || defined(USES_DECON_64BIT_ADDRESS)
+#if defined(USES_ARCH_ARM64) || defined(USES_DECON_64BIT_ADDRESS)
 typedef uint64_t dma_addr_t;
-//#else
-//typedef uint32_t dma_addr_t;
-//#endif
+#else
+typedef uint32_t dma_addr_t;
+#endif
 struct decon_win_rect {
   int x;
   int y;
@@ -39,7 +39,7 @@ struct decon_rect {
   int right;
   int bottom;
 };
-struct decon_user_window {
+struct s3c_fb_user_window {
   int x;
   int y;
 };
@@ -60,7 +60,6 @@ struct s3c_fb_user_ion_client {
   int offset;
 };
 enum decon_pixel_format {
-  /* RGB 32bit */
   DECON_PIXEL_FORMAT_ARGB_8888 = 0,
   DECON_PIXEL_FORMAT_ABGR_8888,
   DECON_PIXEL_FORMAT_RGBA_8888,
@@ -69,27 +68,20 @@ enum decon_pixel_format {
   DECON_PIXEL_FORMAT_XBGR_8888,
   DECON_PIXEL_FORMAT_RGBX_8888,
   DECON_PIXEL_FORMAT_BGRX_8888,
-  /* RGB 16 bit */
   DECON_PIXEL_FORMAT_RGBA_5551,
   DECON_PIXEL_FORMAT_RGB_565,
-  /* YUV422 2P */
   DECON_PIXEL_FORMAT_NV16,
   DECON_PIXEL_FORMAT_NV61,
-  /* YUV422 3P */
   DECON_PIXEL_FORMAT_YVU422_3P,
-  /* YUV420 2P */
   DECON_PIXEL_FORMAT_NV12,
   DECON_PIXEL_FORMAT_NV21,
   DECON_PIXEL_FORMAT_NV12M,
   DECON_PIXEL_FORMAT_NV21M,
-  /* YUV420 3P */
   DECON_PIXEL_FORMAT_YUV420,
   DECON_PIXEL_FORMAT_YVU420,
   DECON_PIXEL_FORMAT_YUV420M,
   DECON_PIXEL_FORMAT_YVU420M,
-
-  DECON_PIXEL_FORMAT_NV21M_FULL,
-
+  DECON_PIXEL_FORMAT_NV12N,
   DECON_PIXEL_FORMAT_MAX,
 };
 enum decon_blending {
@@ -97,20 +89,6 @@ enum decon_blending {
   DECON_BLENDING_PREMULT = 1,
   DECON_BLENDING_COVERAGE = 2,
   DECON_BLENDING_MAX = 3,
-};
-struct exynos_hdmi_data {
-  enum {
-    EXYNOS_HDMI_STATE_PRESET = 0,
-    EXYNOS_HDMI_STATE_ENUM_PRESET,
-    EXYNOS_HDMI_STATE_CEC_ADDR,
-    EXYNOS_HDMI_STATE_HDCP,
-    EXYNOS_HDMI_STATE_AUDIO,
-  } state;
-  struct v4l2_dv_timings *timings;
-  struct v4l2_enum_dv_timings *etimings;
-  __u32 cec_addr;
-  __u32 audio_info;
-  int hdcp;
 };
 enum vpp_rotate {
   VPP_ROT_NORMAL = 0x0,
@@ -131,13 +109,14 @@ enum vpp_csc_eq {
 enum decon_idma_type {
   IDMA_G0 = 0x0,
   IDMA_G1,
+  IDMA_G2,
   IDMA_VG0,
   IDMA_VG1,
+  IDMA_G3,
   IDMA_VGR0,
   IDMA_VGR1,
-  IDMA_G2,
-  IDMA_G3,
-  IDMA_MAX
+  ODMA_WB,
+  MAX_DECON_DMA_TYPE,
 };
 struct vpp_params {
   dma_addr_t addr[MAX_BUF_PLANE_CNT];
@@ -183,14 +162,19 @@ struct decon_win_config_data {
   int fd_odma;
   struct decon_win_config config[MAX_DECON_WIN + 1];
 };
-#define S3CFB_WIN_POSITION _IOW('F', 203, struct decon_user_window)
+enum decon_pwr_mode {
+  DECON_POWER_MODE_OFF = 0,
+  DECON_POWER_MODE_DOZE,
+  DECON_POWER_MODE_NORMAL,
+  DECON_POWER_MODE_DOZE_SUSPEND,
+};
+#define S3CFB_WIN_POSITION _IOW('F', 203, struct s3c_fb_user_window)
 #define S3CFB_WIN_SET_PLANE_ALPHA _IOW('F', 204, struct s3c_fb_user_plane_alpha)
 #define S3CFB_WIN_SET_CHROMA _IOW('F', 205, struct s3c_fb_user_chroma)
 #define S3CFB_SET_VSYNC_INT _IOW('F', 206, __u32)
 #define S3CFB_GET_ION_USER_HANDLE _IOWR('F', 208, struct s3c_fb_user_ion_client)
 #define S3CFB_WIN_CONFIG _IOW('F', 209, struct decon_win_config_data)
+#define S3CFB_DUAL_DISPLAY_BLANK _IOW('F', 300, struct decon_dual_display_blank_data)
 #define S3CFB_WIN_PSR_EXIT _IOW('F', 210, int)
-#define EXYNOS_GET_HDMI_CONFIG _IOW('F', 220, struct exynos_hdmi_data)
-#define EXYNOS_SET_HDMI_CONFIG _IOW('F', 221, struct exynos_hdmi_data)
-
+#define S3CFB_POWER_MODE _IOW('F', 223, __u32)
 #endif
