@@ -25,6 +25,11 @@ exynos7880_dirs += \
 	libkeymaster
 endif
 
+ifeq ($(BOARD_USES_EXYNOS7880_GRALLOC), true)
+exynos7880_dirs += \
+	gralloc
+endif
+
 #ifeq ($(BOARD_BACK_CAMERA_USES_EXTERNAL_CAMERA), true)
 #exynos7880_dirs += \
 #	libcamera_external
